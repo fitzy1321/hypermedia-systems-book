@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "htmx-server",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
