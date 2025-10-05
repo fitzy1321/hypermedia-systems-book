@@ -1,0 +1,8 @@
+{{template "contactdetails" .}}
+{{define "page"}}
+{{if .Contact}}
+<h1>{{.Title}}</h1>
+<hr />
+<p>{{.Contact.FirstName}} {{.Contact.LastName}}</p>
+{{end}}
+{{end}}
