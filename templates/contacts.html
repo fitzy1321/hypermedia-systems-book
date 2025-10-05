@@ -1,4 +1,46 @@
 {{template "contacts" .}}
 {{define "page"}}
 <h1>{{if .Title}}{{.Title}}{{else}}Contact Pages{{end}}</h1>
+<hr />
+<br />
+<form action="/contacts" method="get" class="tool-bar" style="padding-left: 10px;">
+    <label for="search">Search Term</label>
+    <input type="search" name="q" id="search" value={{if .SearchTerm}}{{.SearchTerm}}{{else}}{{end}}></input>
+    <input type="submit" value="Search" />
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>First</th>
+            <th>Last</th>
+            <th>Phone</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{if .Contacts}}
+        {{range .Contacts}}
+        <tr>
+            <td>{{.FirstName}}</td>
+            <td>{{.LastName}}</td>
+            <td>{{.Phone}}</td>
+            <td>{{.Email}}</td>
+            <td><a href="/contacts/{{ .Id }}/edit">Edit</a>
+                <a href="/contacts/{{ .Id }}">View</a>
+            </td>
+        </tr>
+        {{end}}
+        {{end}}
+
+    </tbody>
+</table>
+
+<br />
+<p>
+    <a href="/contacts/new" style="padding: 10px;">Add Contact</a>
+</p>
+{{if .Flash}}
+<p>Flash Message: {{ .Flash }}</p>
+{{end}}
 {{end}}

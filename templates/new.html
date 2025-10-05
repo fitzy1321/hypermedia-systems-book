@@ -1,0 +1,29 @@
+{{template "new" .}}
+{{define "page"}}
+<h1>New Contact Form</h1>
+<hr />
+<form action="/contacts/new" method="post">
+    <fieldset>
+        <legend>Contact Values</legend>
+        <p>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" value="{{if .Email}}{{.Email}}{{else}}{{end}}" />
+        </p>
+        <p>
+            <label for="first_name">First Name</label>
+            <input type="text" name="first_name" id="first_name"
+                value="{{if .FirstName}}{{.FirstName}}{{else}}{{end}}" />
+        </p>
+        <p>
+            <label for="last_name">Last Name</label>
+            <input type="text" name="last_name" id="last_name" value="{{if .LastName}}{{.LastName}}{{else}}{{end}}" />
+        </p>
+        <p>
+            <label for="phone">Phone</label>
+            <input type="text" name="phone" id="phone" value="{{if .Phone}}{{.Phone}}{{else}}{{end}}" />
+        </p>
+        <button>Save</button>
+    </fieldset>
+</form>
+<p><a href="/contacts">Go back</a></p>
+{{end}}
