@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetAllContacts(t *testing.T) {
-	db, err := GetAndSetupDB()
+	db, err := GetAndSetupSqlite3DB("")
 	assert.NoError(t, err)
 	assert.NotNil(t, db, "DB is null")
 

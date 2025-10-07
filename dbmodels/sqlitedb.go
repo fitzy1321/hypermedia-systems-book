@@ -21,8 +21,17 @@ type AppDB struct {
 	*sql.DB
 }
 
-func GetAndSetupDB() (*AppDB, error) {
-	db, err := sql.Open("sqlite3", ":memory:")
+// I'm still questioning if specifying db type in the function name is appropriate?
+// For this level of Application, probably not. If I was to use something like supabase,
+// the whole app would probably need to be updated, not just the db layer.
+//
+// Anyway, leave `filename` blank to make an in memory instance.
+func GetAndSetupSqlite3DB(filename string) (*AppDB, error) {
+	if filename == "" {
+		filename = ":memory:"
+	}
+
+	db, err := sql.Open("sqlite3", filename)
 	if err != nil {
 		if db != nil {
 			db.Close()

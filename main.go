@@ -1,10 +1,11 @@
+package main
+
 // ***************************************************************
 // * __                         ___            __                *
 // */__  _  |  _. ._   _     |_| | |\/| \/    (_   _. | o _|_  _ *
 // *\_| (_) | (_| | | (_| o  | | | |  | /\ o  __) (_| | |  |_ (/_*
 // *                   _| /                /        |            *
 // ***************************************************************
-package main
 
 import (
 	"html/template"
@@ -18,7 +19,7 @@ import (
 
 func main() {
 	log.Println("Starting Sqlite3 ...")
-	db, err := dbmodels.GetAndSetupDB()
+	db, err := dbmodels.GetAndSetupSqlite3DB("")
 	if err != nil {
 		log.Fatal(err)
 	}
