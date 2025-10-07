@@ -7,6 +7,7 @@
 package main
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -26,17 +27,20 @@ func main() {
 	defer db.Close()
 	log.Println("Sqlite Setup Complete!")
 
+	// templates
+	var baseTemplate = template.Must(template.ParseFiles("templates/_base.html"))
+
 	mux := http.NewServeMux()
 	// Static files
 	fs := http.FileServer(http.Dir("static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
 	mux.HandleFunc("GET /", handlers.Index())
-	mux.HandleFunc("GET /contacts", handlers.Contacts(db))
-	mux.HandleFunc("GET /contacts/new", handlers.NewContact())
+	mux.HandleFunc("GET /contacts", handlers.Contacts(db, template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_table.html"))))
+	mux.HandleFunc("GET /contacts/new", handlers.NewContact(template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html"))))
 	mux.HandleFunc("POST /contacts/new", handlers.PostNewContact(db))
-	mux.HandleFunc("GET /contacts/{id}", handlers.ContactDetails(db))
-	mux.HandleFunc("GET /contacts/{id}/edit", handlers.GetContactEdit(db))
+	mux.HandleFunc("GET /contacts/{id}", handlers.ContactDetails(db, template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_details.html"))))
+	mux.HandleFunc("GET /contacts/{id}/edit", handlers.GetContactEdit(db, template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/edit_form.html"))))
 	mux.HandleFunc("POST /contacts/{id}/edit", handlers.PostContactEdit(db))
 	mux.HandleFunc("POST /contacts/{id}/delete", handlers.PostDeleteContact(db))
 

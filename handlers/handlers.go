@@ -3,28 +3,18 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"strconv"
-	"text/template"
 
 	hmsDB "github.com/fitzy1321/hypermedia-systems-book/db"
 )
 
-var baseTemplate = template.Must(template.ParseFiles("templates/_base.html"))
-
-var tmpl = map[string]*template.Template{
-	// "index":    template.Must(template.Must(baseTemplates.Clone()).ParseFiles("templates/index.html")),
-	"view_table":   template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_table.html")),
-	"view_details": template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_details.html")),
-	"new":          template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html")),
-	"edit_form":    template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/edit_form.html")),
-}
-
 // Handlers
 func Index() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "contacts", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "contacts", http.StatusSeeOther) // 303 redirct to GET
 		// data := map[string]any{
 		// 	"Title": "Golang HTMX Contacts App",
 		// }
@@ -36,7 +26,7 @@ func Index() http.HandlerFunc {
 	}
 }
 
-func Contacts(db *hmsDB.AppDB) http.HandlerFunc {
+func Contacts(db *hmsDB.AppDB, tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var contacts []hmsDB.Contact
 		var err error
@@ -47,17 +37,17 @@ func Contacts(db *hmsDB.AppDB) http.HandlerFunc {
 		if q != "" {
 			contacts, err = db.GlobalSearchContacts(q)
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 				return
 			}
 		} else {
 			contacts, err = db.GetAllContacts()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 				return
 			}
 		}
-
+		// It's okay to have empty contacts list
 		data := map[string]any{
 			"Contacts": contacts,
 		}
@@ -68,20 +58,20 @@ func Contacts(db *hmsDB.AppDB) http.HandlerFunc {
 			data["Flash"] = flash
 		}
 
-		err = tmpl["view_table"].ExecuteTemplate(w, "base", data)
+		err = tmpl.ExecuteTemplate(w, "base", data)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 
 	}
 }
 
-func NewContact() http.HandlerFunc {
+func NewContact(tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := tmpl["new"].ExecuteTemplate(w, "base", nil)
+		err := tmpl.ExecuteTemplate(w, "base", nil)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 	}
@@ -91,7 +81,7 @@ func PostNewContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest) // 400
 			return
 		}
 
@@ -102,18 +92,18 @@ func PostNewContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 
 		err = appDB.SaveContact(hmsDB.Contact{Id: 0, FirstName: first_name, LastName: last_name, Phone: phone, Email: email})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 		}
 
-		http.Redirect(w, r, "/contacts?"+url.QueryEscape("flash=Created New User"), http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/contacts?"+url.QueryEscape("flash=Created New User"), http.StatusSeeOther) // 303 redirect to GET
 	}
 }
 
-func ContactDetails(appDB *hmsDB.AppDB) http.HandlerFunc {
+func ContactDetails(appDB *hmsDB.AppDB, tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 		if contact == nil {
@@ -121,22 +111,22 @@ func ContactDetails(appDB *hmsDB.AppDB) http.HandlerFunc {
 			return
 		}
 
-		err = tmpl["view_details"].ExecuteTemplate(w, "base", map[string]any{
+		err = tmpl.ExecuteTemplate(w, "base", map[string]any{
 			"Title":   "Contact Details View",
 			"Contact": contact,
 		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 	}
 }
 
-func GetContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
+func GetContactEdit(appDB *hmsDB.AppDB, tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 		if contact == nil {
@@ -144,12 +134,12 @@ func GetContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 			return
 		}
 
-		err = tmpl["edit_form"].ExecuteTemplate(w, "base", map[string]any{
+		err = tmpl.ExecuteTemplate(w, "base", map[string]any{
 			"Title":   "Edit Contact",
 			"Contact": contact,
 		})
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 	}
@@ -159,7 +149,7 @@ func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 		if contact == nil {
@@ -170,7 +160,7 @@ func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 		// get values from form
 		err = r.ParseForm()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest) // 400
 			return
 		}
 		first_name := r.FormValue("first_name")
@@ -200,10 +190,10 @@ func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 			})
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
-		http.Redirect(w, r, fmt.Sprintf("/contacts/%d", contact.Id), http.StatusFound) // response code: 302
+		http.Redirect(w, r, fmt.Sprintf("/contacts/%d", contact.Id), http.StatusSeeOther) // 303 redirect to GET
 	}
 }
 
@@ -226,7 +216,7 @@ func PostDeleteContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 			return
 		}
 		if contact == nil {
@@ -236,8 +226,8 @@ func PostDeleteContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 
 		err = appDB.DeleteContact(contact.Id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 		}
-		http.Redirect(w, r, "/contacts", http.StatusSeeOther) // responese code: 303
+		http.Redirect(w, r, "/contacts", http.StatusSeeOther) // 303 redirect to GET
 	}
 }

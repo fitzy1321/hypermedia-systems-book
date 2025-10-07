@@ -9,6 +9,9 @@ install_deps:
     go get .
     go mod tidy
 
+test:
+    go test ./...
+
 update:
     go get -u ./...
     go mod tidy
