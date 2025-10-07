@@ -146,7 +146,7 @@ func (appDB *AppDB) UpdateContact(new *Contact) error {
 	UPDATE contacts
 	SET first_name=?,
 		last_name=?,
-		phone=?
+		phone=?,
 		email=?
 	WHERE id=?;`
 	_, err := appDB.Exec(query, new.FirstName, new.LastName, new.Phone, new.Email, new.Id)

@@ -15,10 +15,10 @@ var baseTemplate = template.Must(template.ParseFiles("templates/_base.html"))
 
 var tmpl = map[string]*template.Template{
 	// "index":    template.Must(template.Must(baseTemplates.Clone()).ParseFiles("templates/index.html")),
-	"contacts":       template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/contacts.html")),
-	"new":            template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html")),
-	"contactdetails": template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/contactdetails.html")),
-	"contacteditget": template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/contacteditget.html")),
+	"view_table":   template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_table.html")),
+	"view_details": template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_details.html")),
+	"new":          template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html")),
+	"edit_form":    template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/edit_form.html")),
 }
 
 // Handlers
@@ -68,7 +68,7 @@ func Contacts(db *hmsDB.AppDB) http.HandlerFunc {
 			data["Flash"] = flash
 		}
 
-		err = tmpl["contacts"].ExecuteTemplate(w, "base", data)
+		err = tmpl["view_table"].ExecuteTemplate(w, "base", data)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -121,7 +121,7 @@ func ContactDetails(appDB *hmsDB.AppDB) http.HandlerFunc {
 			return
 		}
 
-		err = tmpl["contactdetails"].ExecuteTemplate(w, "base", map[string]any{
+		err = tmpl["view_details"].ExecuteTemplate(w, "base", map[string]any{
 			"Title":   "Contact Details View",
 			"Contact": contact,
 		})
@@ -144,7 +144,7 @@ func GetContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 			return
 		}
 
-		err = tmpl["contacteditget"].ExecuteTemplate(w, "base", map[string]any{
+		err = tmpl["edit_form"].ExecuteTemplate(w, "base", map[string]any{
 			"Title":   "Edit Contact",
 			"Contact": contact,
 		})
