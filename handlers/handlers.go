@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -16,6 +18,7 @@ var tmpl = map[string]*template.Template{
 	"contacts":       template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/contacts.html")),
 	"new":            template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html")),
 	"contactdetails": template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/contactdetails.html")),
+	"contacteditget": template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/contacteditget.html")),
 }
 
 // Handlers
@@ -108,15 +111,7 @@ func PostNewContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 
 func ContactDetails(appDB *hmsDB.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		idStr := r.PathValue("id")
-
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			http.Error(w, "Invalid User Id", http.StatusBadRequest)
-			return
-		}
-
-		contact, err := appDB.GetContactById(id)
+		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -134,5 +129,115 @@ func ContactDetails(appDB *hmsDB.AppDB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func GetContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		contact, err := getContactFromPathID(appDB, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if contact == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		err = tmpl["contacteditget"].ExecuteTemplate(w, "base", map[string]any{
+			"Title":   "Edit Contact",
+			"Contact": contact,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		contact, err := getContactFromPathID(appDB, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if contact == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		// get values from form
+		err = r.ParseForm()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		first_name := r.FormValue("first_name")
+		if first_name == "" {
+			first_name = contact.FirstName
+		}
+		last_name := r.FormValue("last_name")
+		if last_name == "" {
+			last_name = contact.LastName
+		}
+		email := r.FormValue("email")
+		if email == "" {
+			email = contact.Email
+		}
+		phone := r.FormValue("phone")
+		if phone == "" {
+			phone = contact.Phone
+		}
+
+		err = appDB.UpdateContact(
+			&hmsDB.Contact{
+				Id:        contact.Id,
+				FirstName: first_name,
+				LastName:  last_name,
+				Phone:     phone,
+				Email:     email,
+			})
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, fmt.Sprintf("/contacts/%d", contact.Id), http.StatusFound) // response code: 302
+	}
+}
+
+func getContactFromPathID(appDB *hmsDB.AppDB, r *http.Request) (*hmsDB.Contact, error) {
+	idStr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return nil, errors.New("Invalid Contact ID in Path.")
+	}
+
+	contact, err := appDB.GetContactById(id)
+	if err != nil {
+		return nil, err
+	}
+	return contact, nil
+}
+
+func PostDeleteContact(appDB *hmsDB.AppDB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		contact, err := getContactFromPathID(appDB, r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if contact == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		err = appDB.DeleteContact(contact.Id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		http.Redirect(w, r, "/contacts", http.StatusSeeOther) // responese code: 303
 	}
 }

@@ -1,8 +1,17 @@
 {{template "contactdetails" .}}
 {{define "page"}}
 {{if .Contact}}
-<h1>{{.Title}}</h1>
+<h1>Contact Details</h1>
 <hr />
-<p>{{.Contact.FirstName}} {{.Contact.LastName}}</p>
+<div>
+    <div>First Name: {{.Contact.FirstName}}</div>
+    <div>Last Name: {{.Contact.LastName}}</div>
+    <div>Phone: {{.Contact.Phone}}</div>
+    <div>Email: {{.Contact.Email}}</div>
+</div>
+<p>
+    <a href="/contacts/{{.Contact.Id}}/edit">Edit</a>
+    <a href="/contacts">Back</a>
+</p>
 {{end}}
 {{end}}

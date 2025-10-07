@@ -1,0 +1,37 @@
+{{template "contacteditget" .}}
+{{define "page"}}
+<form action="/contacts/{{.Contact.Id}}/edit" method="post">
+    <fieldset>
+        <legend>Contact Values</legend>
+        <p>
+            <label for="email">Email</label>
+            <input type="text" name="email" id="email" placeholder="Email" value="{{.Contact.Email}}" />
+            <span class="error">{{if .EmailErrors}}{{.EmailErrors}}{{end}}</span>
+        </p>
+        <p>
+            <label for="first_name">First Name</label>
+            <input type="text" name="first_name" id="first_name" placeholder="First Name"
+                value="{{.Contact.FirstName}}" />
+            <span class="error">{{if .FirstNameErrors}}{{.FirstNameErrors}}{{end}}</span>
+        </p>
+        <p>
+            <label for="last_name">Last Name</label>
+            <input type="text" name="last_name" id="last_name" placeholder="Last Name" value="{{.Contact.LastName}}" />
+            <span class="error">{{if .LastNameErrors}}{{.LastNameErrors}}{{end}}</span>
+        </p>
+        <p>
+            <label for="phone">Phone</label>
+            <input type="text" name="phone" id="phone" placeholder="Phone" value="{{.Contact.Phone}}" />
+            <span class="error">{{if .PhoneErrors}}{{.PhoneErrors}}{{end}}</span>
+        </p>
+        <button type="submit">Save</button>
+    </fieldset>
+</form>
+
+<form action="/contacts/{{.Contact.Id}}/delete" method="post">
+    <button>Delete Contact</button>
+</form>
+<p>
+    <a href="/contacts/{{.Contact.Id}}">Back</a>
+</p>
+{{end}}

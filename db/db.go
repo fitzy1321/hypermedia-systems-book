@@ -140,3 +140,22 @@ func (appDB *AppDB) GetContactById(id int) (*Contact, error) {
 
 	return &c, nil
 }
+
+func (appDB *AppDB) UpdateContact(new *Contact) error {
+	query := `
+	UPDATE contacts
+	SET first_name=?,
+		last_name=?,
+		phone=?
+		email=?
+	WHERE id=?;`
+	_, err := appDB.Exec(query, new.FirstName, new.LastName, new.Phone, new.Email, new.Id)
+	return err
+}
+
+func (appDB *AppDB) DeleteContact(id int) error {
+	query := `DELETE FROM CONTACTS WHERE id=?;`
+
+	_, err := appDB.Exec(query, id)
+	return err
+}

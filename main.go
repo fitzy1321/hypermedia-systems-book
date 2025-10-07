@@ -30,6 +30,9 @@ func main() {
 	mux.HandleFunc("GET /contacts/new", handlers.NewContact())
 	mux.HandleFunc("POST /contacts/new", handlers.PostNewContact(db))
 	mux.HandleFunc("GET /contacts/{id}", handlers.ContactDetails(db))
+	mux.HandleFunc("GET /contacts/{id}/edit", handlers.GetContactEdit(db))
+	mux.HandleFunc("POST /contacts/{id}/edit", handlers.PostContactEdit(db))
+	mux.HandleFunc("POST /contacts/{id}/delete", handlers.PostDeleteContact(db))
 
 	// Server configuration
 	srv := &http.Server{
