@@ -1,10 +1,25 @@
-package db
+package dbmodels
 
 import (
 	"database/sql"
 	"errors"
 	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
 )
+
+// Contact Table DB Model
+type Contact struct {
+	Id        int
+	FirstName string
+	LastName  string
+	Phone     string
+	Email     string
+}
+
+type AppDB struct {
+	*sql.DB
+}
 
 func GetAndSetupDB() (*AppDB, error) {
 	db, err := sql.Open("sqlite3", ":memory:")
@@ -39,7 +54,7 @@ func GetAndSetupDB() (*AppDB, error) {
 	contacts := []struct {
 		firstName, lastName, phone, email string
 	}{
-		{"Foo", "Bar", "Baz", "Foz"},
+		{"Foo", "Bar", "Baz", "Quux"},
 	}
 
 	insertSQL := `INSERT INTO contacts (first_name, last_name, phone, email) VALUES (?,?,?,?);`
@@ -51,18 +66,6 @@ func GetAndSetupDB() (*AppDB, error) {
 	}
 
 	return &AppDB{db}, nil
-}
-
-type Contact struct {
-	Id        int
-	FirstName string
-	LastName  string
-	Phone     string
-	Email     string
-}
-
-type AppDB struct {
-	*sql.DB
 }
 
 func ParseRowToContact(rows *sql.Rows) (*Contact, error) {

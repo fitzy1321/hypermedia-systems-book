@@ -12,15 +12,13 @@ import (
 	"net/http"
 	"time"
 
-	hmsDB "github.com/fitzy1321/hypermedia-systems-book/db"
+	"github.com/fitzy1321/hypermedia-systems-book/dbmodels"
 	"github.com/fitzy1321/hypermedia-systems-book/handlers"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 	log.Println("Starting Sqlite3 ...")
-	db, err := hmsDB.GetAndSetupDB()
+	db, err := dbmodels.GetAndSetupDB()
 	if err != nil {
 		log.Fatal(err)
 	}

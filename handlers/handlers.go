@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	hmsDB "github.com/fitzy1321/hypermedia-systems-book/db"
+	"github.com/fitzy1321/hypermedia-systems-book/dbmodels"
 )
 
 // Handlers
@@ -26,22 +26,22 @@ func Index() http.HandlerFunc {
 	}
 }
 
-func Contacts(db *hmsDB.AppDB, tmpl *template.Template) http.HandlerFunc {
+func Contacts(appdb *dbmodels.AppDB, tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var contacts []hmsDB.Contact
+		var contacts []dbmodels.Contact
 		var err error
 		// get optional "q" param
 		query := r.URL.Query()
 		q := query.Get("q")
 		flash := query.Get("flash")
 		if q != "" {
-			contacts, err = db.GlobalSearchContacts(q)
+			contacts, err = appdb.GlobalSearchContacts(q)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 				return
 			}
 		} else {
-			contacts, err = db.GetAllContacts()
+			contacts, err = appdb.GetAllContacts()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 				return
@@ -77,7 +77,7 @@ func NewContact(tmpl *template.Template) http.HandlerFunc {
 	}
 }
 
-func PostNewContact(appDB *hmsDB.AppDB) http.HandlerFunc {
+func PostNewContact(appDB *dbmodels.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
@@ -90,7 +90,7 @@ func PostNewContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 		phone := r.FormValue("phone")
 		email := r.FormValue("email")
 
-		err = appDB.SaveContact(hmsDB.Contact{Id: 0, FirstName: first_name, LastName: last_name, Phone: phone, Email: email})
+		err = appDB.SaveContact(dbmodels.Contact{Id: 0, FirstName: first_name, LastName: last_name, Phone: phone, Email: email})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError) // 500
 		}
@@ -99,7 +99,7 @@ func PostNewContact(appDB *hmsDB.AppDB) http.HandlerFunc {
 	}
 }
 
-func ContactDetails(appDB *hmsDB.AppDB, tmpl *template.Template) http.HandlerFunc {
+func ContactDetails(appDB *dbmodels.AppDB, tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
@@ -122,7 +122,7 @@ func ContactDetails(appDB *hmsDB.AppDB, tmpl *template.Template) http.HandlerFun
 	}
 }
 
-func GetContactEdit(appDB *hmsDB.AppDB, tmpl *template.Template) http.HandlerFunc {
+func GetContactEdit(appDB *dbmodels.AppDB, tmpl *template.Template) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
@@ -145,7 +145,7 @@ func GetContactEdit(appDB *hmsDB.AppDB, tmpl *template.Template) http.HandlerFun
 	}
 }
 
-func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
+func PostContactEdit(appDB *dbmodels.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
@@ -181,7 +181,7 @@ func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 		}
 
 		err = appDB.UpdateContact(
-			&hmsDB.Contact{
+			&dbmodels.Contact{
 				Id:        contact.Id,
 				FirstName: first_name,
 				LastName:  last_name,
@@ -197,7 +197,7 @@ func PostContactEdit(appDB *hmsDB.AppDB) http.HandlerFunc {
 	}
 }
 
-func getContactFromPathID(appDB *hmsDB.AppDB, r *http.Request) (*hmsDB.Contact, error) {
+func getContactFromPathID(appDB *dbmodels.AppDB, r *http.Request) (*dbmodels.Contact, error) {
 	idStr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -212,7 +212,7 @@ func getContactFromPathID(appDB *hmsDB.AppDB, r *http.Request) (*hmsDB.Contact, 
 	return contact, nil
 }
 
-func PostDeleteContact(appDB *hmsDB.AppDB) http.HandlerFunc {
+func PostDeleteContact(appDB *dbmodels.AppDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		contact, err := getContactFromPathID(appDB, r)
 		if err != nil {
