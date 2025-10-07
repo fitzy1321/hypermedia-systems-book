@@ -36,11 +36,33 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
 	mux.HandleFunc("GET /", handlers.Index())
-	mux.HandleFunc("GET /contacts", handlers.Contacts(db, template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_table.html"))))
-	mux.HandleFunc("GET /contacts/new", handlers.NewContact(template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html"))))
+	mux.HandleFunc(
+		"GET /contacts",
+		handlers.Contacts(
+			db,
+			template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_table.html")),
+		),
+	)
+	mux.HandleFunc(
+		"GET /contacts/new",
+		handlers.NewContact(
+			template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/new.html"))),
+	)
 	mux.HandleFunc("POST /contacts/new", handlers.PostNewContact(db))
-	mux.HandleFunc("GET /contacts/{id}", handlers.ContactDetails(db, template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_details.html"))))
-	mux.HandleFunc("GET /contacts/{id}/edit", handlers.GetContactEdit(db, template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/edit_form.html"))))
+	mux.HandleFunc(
+		"GET /contacts/{id}",
+		handlers.ContactDetails(
+			db,
+			template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/view_details.html")),
+		),
+	)
+	mux.HandleFunc(
+		"GET /contacts/{id}/edit",
+		handlers.GetContactEdit(
+			db,
+			template.Must(template.Must(baseTemplate.Clone()).ParseFiles("templates/edit_form.html")),
+		),
+	)
 	mux.HandleFunc("POST /contacts/{id}/edit", handlers.PostContactEdit(db))
 	mux.HandleFunc("POST /contacts/{id}/delete", handlers.PostDeleteContact(db))
 
